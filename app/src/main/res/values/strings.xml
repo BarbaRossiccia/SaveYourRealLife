@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SaveYourRealLife</string>
+    <string name="accessibility_service_label">Blocco app SaveYourRealLife</string>
+    <string name="accessibility_service_description">Rileva esclusivamente quale app viene aperta e torna alla schermata Home quando l’app è nella lista di blocco. Non legge testi o contenuti dello schermo.</string>
+</resources>
