@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SaveYourRealLife</string>
+    <string name="accessibility_service_label">SaveYourRealLife app blocker</string>
+    <string name="accessibility_service_description">Only detects which app is open and returns to the Home screen when the app is on the block list. It does not read text or screen content.</string>
+</resources>
