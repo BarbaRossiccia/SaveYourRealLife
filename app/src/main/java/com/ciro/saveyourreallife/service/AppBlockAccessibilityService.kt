@@ -16,6 +16,7 @@ import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.widget.TextView
 import com.ciro.saveyourreallife.data.BlockedAppsRepository
+import com.ciro.saveyourreallife.data.UiPreferencesRepository
 import com.ciro.saveyourreallife.model.BlockEventGuard
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,18 +31,30 @@ class AppBlockAccessibilityService : AccessibilityService() {
     private val eventGuard = BlockEventGuard()
     private val mainHandler = Handler(Looper.getMainLooper())
     private var blockedAppsJob: Job? = null
+    private var languageJob: Job? = null
     private var popupView: View? = null
     @Volatile private var blockedPackages: Set<String> = emptySet()
+    @Volatile private var language: String = "it"
 
     private val removePopup = Runnable { removeBlockPopup() }
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        AccessibilityServiceConnection.setConnected(true)
+        AccessibilityServiceConnection.setConnected(true) {
+            removeBlockPopup()
+            disableSelf()
+            AccessibilityServiceConnection.setConnected(false)
+        }
         blockedAppsJob?.cancel()
         blockedAppsJob = serviceScope.launch {
             BlockedAppsRepository(applicationContext).blockedPackages.collectLatest {
                 blockedPackages = it
+            }
+        }
+        languageJob?.cancel()
+        languageJob = serviceScope.launch {
+            UiPreferencesRepository(applicationContext).language.collectLatest {
+                language = it
             }
         }
     }
@@ -63,6 +76,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
     override fun onUnbind(intent: Intent?): Boolean {
         AccessibilityServiceConnection.setConnected(false)
         blockedAppsJob?.cancel()
+        languageJob?.cancel()
         removeBlockPopup()
         return super.onUnbind(intent)
     }
@@ -70,6 +84,7 @@ class AppBlockAccessibilityService : AccessibilityService() {
     override fun onDestroy() {
         AccessibilityServiceConnection.setConnected(false)
         blockedAppsJob?.cancel()
+        languageJob?.cancel()
         removeBlockPopup()
         serviceScope.cancel()
         super.onDestroy()
@@ -80,7 +95,11 @@ class AppBlockAccessibilityService : AccessibilityService() {
 
         val density = resources.displayMetrics.density
         val popup = TextView(this).apply {
-            text = "Blocked by SaveYourRealLife"
+            text = if (language == "en") {
+                "Blocked by SaveYourRealLife"
+            } else {
+                "Bloccata da SaveYourRealLife"
+            }
             setTextColor(Color.WHITE)
             textSize = 15f
             typeface = Typeface.DEFAULT_BOLD

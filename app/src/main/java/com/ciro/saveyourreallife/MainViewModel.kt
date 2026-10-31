@@ -20,7 +20,19 @@ data class MainUiState(
     val query: String = "",
     val loading: Boolean = true,
     val accessibilityExplanationSeen: Boolean = false,
+    val language: AppLanguage = AppLanguage.ITALIAN,
+    val darkTheme: Boolean = false,
 )
+
+enum class AppLanguage(val code: String) {
+    ITALIAN("it"),
+    ENGLISH("en");
+
+    companion object {
+        fun fromCode(code: String): AppLanguage =
+            entries.firstOrNull { it.code == code } ?: ITALIAN
+    }
+}
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val blockedAppsRepository = BlockedAppsRepository(application)
@@ -35,8 +47,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         blockedAppsRepository.blockedPackages,
         query,
         loading,
-        uiPreferencesRepository.accessibilityExplanationSeen,
-    ) { installedApps, blockedPackages, searchQuery, isLoading, explanationSeen ->
+        uiPreferencesRepository.preferences,
+    ) { installedApps, blockedPackages, searchQuery, isLoading, preferences ->
         MainUiState(
             apps = installedApps.filter {
                 searchQuery.isBlank() || it.name.contains(searchQuery, ignoreCase = true)
@@ -44,7 +56,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             blockedPackages = blockedPackages,
             query = searchQuery,
             loading = isLoading,
-            accessibilityExplanationSeen = explanationSeen,
+            accessibilityExplanationSeen = preferences.accessibilityExplanationSeen,
+            language = AppLanguage.fromCode(preferences.language),
+            darkTheme = preferences.darkTheme,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -69,6 +83,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun markAccessibilityExplanationSeen() {
         viewModelScope.launch {
             uiPreferencesRepository.markAccessibilityExplanationSeen()
+        }
+    }
+
+    fun setLanguage(language: AppLanguage) {
+        viewModelScope.launch {
+            uiPreferencesRepository.setLanguage(language.code)
+        }
+    }
+
+    fun setDarkTheme(enabled: Boolean) {
+        viewModelScope.launch {
+            uiPreferencesRepository.setDarkTheme(enabled)
         }
     }
 
