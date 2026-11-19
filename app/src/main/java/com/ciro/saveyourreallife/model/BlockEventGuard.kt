@@ -8,7 +8,11 @@ class BlockEventGuard(private val duplicateWindowMillis: Long = 1_500L) {
     fun shouldBlock(packageName: String, blocked: Boolean, nowMillis: Long): Boolean {
         if (packageName == foregroundPackageName) return false
         foregroundPackageName = packageName
-        if (!blocked) return false
+        if (!blocked) {
+            // Leaving the blocked app ends the opening, including its duplicate window.
+            lastBlockedPackageName = null
+            return false
+        }
 
         val isDuplicate = packageName == lastBlockedPackageName &&
             nowMillis - lastBlockTime in 0 until duplicateWindowMillis
