@@ -10,9 +10,13 @@ want to use an app intentionally, then turn it back on.
 ## Screenshots
 
 <p>
-  <img src="docs/screenshots/main-screen.png" alt="App selection with TikTok blocking enabled" width="280">
-  <img src="docs/screenshots/block-message.png" alt="Home screen showing the blocking message" width="280">
+  <img src="docs/screenshots/main-screen.png" alt="App selection with TikTok blocking enabled" width="260">
+  &emsp;&emsp;
+  <img src="docs/screenshots/block-message.png" alt="Home screen showing the blocking message" width="260">
 </p>
+
+App selection with blocking enabled (left) and the blocking message
+after returning to the Home screen (right).
 
 
 ## Features
